@@ -17,3 +17,7 @@ serving_dir
 *.parquet
 *.csv
 *.duckdb
+.cache/
+.venv/
+javascripts/
+stylesheets/

@@ -20,7 +20,7 @@ Run docker with the `python:3.13` image. Use an entrypoint `bash` to interact wi
 
 What's the version of `pip` in the image?
 
-- 25.3
+- 25.3 [X]
 - 24.3.1
 - 24.2.1
 - 23.3.1
@@ -67,8 +67,8 @@ volumes:
 - postgres:5433
 - localhost:5432
 - db:5433
-- postgres:5432
-- db:5432
+- postgres:5432 [X]
+- db:5432 [X]
 
 If multiple answers are correct, select any 
 
@@ -91,8 +91,19 @@ wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_z
 
 For the trips in November 2025 (lpep_pickup_datetime between '2025-11-01' and '2025-12-01', exclusive of the upper bound), how many trips had a `trip_distance` of less than or equal to 1 mile?
 
+```sql
+SELECT 
+    count(1)
+FROM
+    green_trip_2025
+WHERE
+    lpep_pickup_datetime >= '2025-11-01' 
+    AND lpep_pickup_datetime < '2025-12-01'
+    AND trip_distance <= 1;
+```
+
 - 7,853
-- 8,007
+- 8,007 [X]
 - 8,254
 - 8,421
 
@@ -103,7 +114,17 @@ Which was the pick up day with the longest trip distance? Only consider trips wi
 
 Use the pick up time for your calculations.
 
-- 2025-11-14
+```sql
+SELECT DISTINCT DATE(lpep_pickup_datetime)
+FROM green_trip_2025
+WHERE trip_distance = (
+    SELECT MAX(trip_distance)
+    FROM green_trip_2025
+	WHERE trip_distance < 100
+);
+```
+
+- 2025-11-14 [X]
 - 2025-11-20
 - 2025-11-23
 - 2025-11-25
@@ -113,7 +134,20 @@ Use the pick up time for your calculations.
 
 Which was the pickup zone with the largest `total_amount` (sum of all trips) on November 18th, 2025?
 
-- East Harlem North
+```sql
+SELECT
+    z."Zone",
+    SUM(g.total_amount) AS total_revenue
+FROM green_trip_2025 g
+JOIN taxi_zone z
+    ON z."LocationID" = g."PULocationID"
+WHERE g.lpep_pickup_datetime::date = '2025-11-18'
+GROUP BY z."Zone"
+ORDER BY total_revenue DESC
+LIMIT 1;
+```
+
+- East Harlem North [X]
 - East Harlem South
 - Morningside Heights
 - Forest Hills
@@ -125,8 +159,26 @@ For the passengers picked up in the zone named "East Harlem North" in November 2
 
 Note: it's `tip` , not `trip`. We need the name of the zone, not the ID.
 
+```sql
+SELECT
+    z_do."Zone" as dropoff_zone,
+    MAX(g.tip_amount) AS max_tip
+FROM green_trip_2025 g
+JOIN taxi_zone z_pu
+    ON z_pu."LocationID" = g."PULocationID"
+JOIN taxi_zone z_do
+    ON z_do."LocationID" = g."DOLocationID"
+WHERE z_pu."Zone" = 'East Harlem North'
+    AND g.lpep_pickup_datetime >= '2025-11-01'
+    AND g.lpep_pickup_datetime < '2025-12-01'
+GROUP BY z_do."Zone"
+ORDER BY max_tip DESC
+LIMIT 1;
+```
+
+
 - JFK Airport
-- Yorkville West
+- Yorkville West  [X]
 - East Harlem North
 - LaGuardia Airport
 
