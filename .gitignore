@@ -1,2 +1,19 @@
+# data files
+*.csv
 *.parquet
 
+# notebooks cache
+.ipynb_checkpoints/
+
+# virtual env
+.venv/
+
+# python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+
+# logs
+*.log
